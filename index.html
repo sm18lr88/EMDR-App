@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Audio Visualizer with Three.js</title>
+    <style>
+        body { margin: 0; color: white; background-color: black; }
+        #scene-container { width: 100%; height: 100vh; display: block; }
+        .control-container {
+            display: flex;
+            justify-content: center;
+            position: absolute;
+            bottom: 5%;
+            left: 0;
+            right: 0;
+        }
+        .control {
+            display: flex;
+            align-items: center;
+            margin: 0 10px; /* Adjust spacing between controls as needed */
+        }
+        .control label {
+            margin-right: 10px;
+            display: inline-block; /* Ensure label is on the same line as buttons */
+        }
+        .control button {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            margin: 0 2px;
+            display: inline-block; /* Ensure buttons are on the same line as label */
+        }
+        #startButton, #endButton { 
+            position: absolute; 
+            bottom: 1%;
+            left: 50%; 
+            transform: translateX(-50%); 
+        }
+        .sound-type-container {
+            position: absolute;
+            bottom: 15%;
+            right: 10%;
+        }
+        .sound-type-container label {
+            display: block;
+            color: white;
+        }
+    </style>
+    <script src="three.min.js"></script>
+</head>
+<body>
+    <div id="scene-container"></div>
+    <div class="control-container">
+        <div class="control" style="color: #FFD700;"> <!-- Gold color for Speed -->
+            <label for="heartRate">Speed</label>
+            <button onclick="adjustValue('heartRate', -0.1)">↓</button>
+            <button onclick="adjustValue('heartRate', 0.1)">↑</button>
+        </div>
+        <div class="control" style="color: #FF4500;"> <!-- OrangeRed color for Ball Size -->
+            <label for="ballSize">Ball Size</label>
+            <button onclick="adjustBallSize(-0.1)">↓</button>
+            <button onclick="adjustBallSize(0.1)">↑</button>
+        </div>
+        <div class="control" style="color: #8A2BE2;"> <!-- BlueViolet color for Frequency -->
+            <label for="frequency">Frequency</label>
+            <button onclick="adjustValue('frequency', -1)">↓</button>
+            <button onclick="adjustValue('frequency', 1)">↑</button>
+        </div>
+        <div class="control" style="color: #3CB371;"> <!-- MediumSeaGreen color for Volume -->
+            <label for="volume">Volume</label>
+            <button onclick="adjustValue('volume', -0.01)">↓</button>
+            <button onclick="adjustValue('volume', 0.01)">↑</button>
+        </div>
+    </div>
+    <div class="sound-type-container">
+        <label><input type="radio" name="soundType" value="sine" checked>Sine</label>
+        <label><input type="radio" name="soundType" value="square">Square</label>
+        <label><input type="radio" name="soundType" value="sawtooth">Sawtooth</label>
+        <label><input type="radio" name="soundType" value="triangle">Triangle</label>
+    </div>
+    <button id="startButton">Start</button>
+    <button id="endButton" style="display:none;">End</button>
+    <script>
+        let scene, camera, renderer;
+        let geometry, material, mesh;
+        let heartRate = 1.2, frequency = 220, volume = 0.3;
+        let maxHeartRate = 4;
+        let oscillator, gainNode, audioContext, panner;
+        let animationFrameId;
+        let direction = 0.1;
+        let isAudioStarted = false;
+        let ballSize = 0.5;
+
+        function init() {
+            const sceneContainer = document.getElementById('scene-container');
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(sceneContainer.offsetWidth, sceneContainer.offsetHeight);
+            sceneContainer.appendChild(renderer.domElement);
+
+            geometry = new THREE.SphereGeometry(ballSize, 32, 32);
+            material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
+
+            mesh = new THREE.Mesh(geometry, material);
+            scene.add(mesh);
+
+            camera.position.z = 5;
+
+            // Event listeners for control buttons
+            document.getElementById('startButton').addEventListener('click', startAudio);
+            document.getElementById('endButton').addEventListener('click', stopAudio);
+
+            // Event listeners for sound type radio buttons
+            document.querySelectorAll('input[name="soundType"]').forEach((input) => {
+                input.addEventListener('change', updateSoundType);
+            });
+        }
+
+        function startAudio() {
+            document.getElementById('startButton').style.display = "none";
+            document.getElementById('endButton').style.display = 'block';
+
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            oscillator = audioContext.createOscillator();
+            gainNode = audioContext.createGain();
+            panner = audioContext.createStereoPanner();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(panner);
+            panner.connect(audioContext.destination);
+
+            oscillator.type = "sine";
+            oscillator.frequency.value = frequency;
+            gainNode.gain.value = volume;
+
+            oscillator.start();
+            isAudioStarted = true;
+
+            animate();
+        }
+
+        function animate() {
+            if (!isAudioStarted) return;
+            animationFrameId = requestAnimationFrame(animate);
+
+            mesh.position.x += direction * heartRate;
+            if (mesh.position.x > 6.5 || mesh.position.x < -6.5) {
+                direction *= -1;
+            }
+            panner.pan.value = Math.max(-1, Math.min(1, 2 * (mesh.position.x / 6.5)));
+            gainNode.gain.value = volume * (0.2 + 0.8 * Math.abs(mesh.position.x / 6.5));
+
+            renderer.render(scene, camera);
+        }
+
+        function adjustBallSize(change) {
+            ballSize += change;
+            ballSize = Math.max(0.1, Math.min(2, ballSize)); // Adjust within a reasonable range
+            if (mesh) mesh.scale.set(ballSize, ballSize, ballSize); // Update the mesh scale
+        }
+
+        function adjustValue(type, change) {
+            if (type === 'heartRate') {
+                heartRate += change;
+                heartRate = Math.max(0, Math.min(maxHeartRate, heartRate));
+            } else if (type === 'frequency') {
+                frequency += change;
+                frequency = Math.max(20, Math.min(2000, frequency));
+                if (oscillator) oscillator.frequency.value = frequency;
+            } else if (type === 'volume') {
+                volume += change;
+                volume = Math.max(0, Math.min(1, volume));
+                if (gainNode) gainNode.gain.value = volume;
+            }
+        }
+
+        function stopAudio() {
+            if (oscillator) {
+                oscillator.stop();
+                oscillator.disconnect();
+                oscillator = null;
+            }
+            if (audioContext) {
+                audioContext.close();
+                audioContext = null;
+            }
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+            document.getElementById('startButton').style.display = "block";
+            document.getElementById('endButton').style.display = 'none';
+            isAudioStarted = false;
+            location.reload(); // Refresh the page to reset everything
+        }
+
+        function updateSoundType() {
+            if (isAudioStarted && audioContext && oscillator) {
+                const soundType = document.querySelector('input[name="soundType"]:checked').value;
+                oscillator.type = soundType;
+            }
+        }
+
+        init(); // Initialize the scene
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "name": "EMDR",
+  "version": "1.0.0",
+  "description": "EMDR app",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "package": "electron-packager . EMDR --platform=win32 --arch=x64"
+  },
+  "keywords": [],
+  "author": "Github.com/DazzlingDukeOfLazers/emdr",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^28.1.3",
+    "electron-packager": "^17.1.2"
+  }
+}
