@@ -8,6 +8,9 @@ Please note, the animation is designed to work at the common 1920 * 1080 screen 
 
 I'll update in the future so that it adjusts dynamically to other monitor resolutions.
 
+<image src='https://github.com/sm18lr88/EMDR-App/assets/64564447/5d8cdc98-45fc-4154-8046-ce2130289d74' width='850'>
+
+
 
 ### License:
 - Personal use: humans can use and modify for personal use.
