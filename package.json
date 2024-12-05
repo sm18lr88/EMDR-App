@@ -8,7 +8,7 @@
     "package": "electron-packager . EMDR --platform=win32 --arch=x64"
   },
   "keywords": [],
-  "author": "Github.com/DazzlingDukeOfLazers/emdr",
+  "author": "Github.com/sm18lr88/EMDR-App",
   "license": "ISC",
   "devDependencies": {
     "electron": "^28.1.3",
