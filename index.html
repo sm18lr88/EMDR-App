@@ -1,95 +1,259 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Audio Visualizer with Three.js</title>
+    <title>EMDR App</title>
     <style>
-        body { margin: 0; color: white; background-color: black; }
+        body { margin: 0; color: white; background-color: black; overflow: hidden; }
         #scene-container { width: 100%; height: 100vh; display: block; }
-        .control-container {
-            display: flex;
-            justify-content: center;
+        /* Control Panel Styles */
+        .control-panel {
             position: absolute;
-            bottom: 5%;
+            bottom: 0;
             left: 0;
-            right: 0;
+            width: 100%;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            box-sizing: border-box;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            display: none;
+            max-height: 50%;
+            overflow-y: auto;
         }
-        .control {
+        .control-group {
+            margin: 5px;
+            flex: 1;
+            min-width: 150px;
+        }
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .control-group input[type="range"] {
+            width: 100%;
+        }
+        .control-group input[type="color"] {
+            width: 100%;
+            height: 30px;
+            border: none;
+            padding: 0;
+        }
+        .control-group .checkbox-label {
             display: flex;
             align-items: center;
-            margin: 0 10px; /* Adjust spacing between controls as needed */
         }
-        .control label {
-            margin-right: 10px;
-            display: inline-block; /* Ensure label is on the same line as buttons */
-        }
-        .control button {
-            background: none;
-            border: none;
-            color: inherit;
-            cursor: pointer;
-            margin: 0 2px;
-            display: inline-block; /* Ensure buttons are on the same line as label */
+        .control-group .checkbox-label input {
+            margin-right: 5px;
         }
         #startButton, #endButton { 
             position: absolute; 
-            bottom: 1%;
-            left: 50%; 
-            transform: translateX(-50%); 
+            bottom: 10px;
+            right: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
         }
+        /* Icons */
+        .icon-button {
+            position: absolute;
+            top: 10px;
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #settingsButton {
+            left: 10px;
+        }
+        #questionsButton {
+            left: 60px;
+        }
+        /* Sound Type Container */
         .sound-type-container {
             position: absolute;
-            bottom: 15%;
-            right: 10%;
+            top: 60px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
         }
         .sound-type-container label {
             display: block;
             color: white;
+        }
+        /* Questions Panel */
+        .questions-panel {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            overflow-y: auto;
+            display: none;
+            box-sizing: border-box;
+        }
+        .questions-panel h2 {
+            margin-top: 0;
+            text-align: center;
+        }
+        .question {
+            margin-bottom: 20px;
+        }
+        .question label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .question textarea {
+            width: 100%;
+            resize: vertical;
+        }
+        .question input[type="range"] {
+            width: 100%;
+        }
+        .question .range-value {
+            text-align: right;
         }
     </style>
     <script src="three.min.js"></script>
 </head>
 <body>
     <div id="scene-container"></div>
-    <div class="control-container">
-        <div class="control" style="color: #FFD700;"> <!-- Gold color for Speed -->
-            <label for="heartRate">Speed</label>
-            <button onclick="adjustValue('heartRate', -0.1)">↓</button>
-            <button onclick="adjustValue('heartRate', 0.1)">↑</button>
+    <!-- Icons -->
+    <button id="settingsButton" class="icon-button">
+        <!-- Cogwheel Icon -->
+        &#9881;
+    </button>
+    <button id="questionsButton" class="icon-button">
+        <!-- Question Mark Icon -->
+        &#10067;
+    </button>
+    <!-- Control Panel -->
+    <div class="control-panel" id="controlPanel">
+        <div class="control-group">
+            <label for="speedControl">Speed: <span id="speedValue">1.2</span></label>
+            <input type="range" id="speedControl" min="0.1" max="5" step="0.1" value="1.2">
         </div>
-        <div class="control" style="color: #FF4500;"> <!-- OrangeRed color for Ball Size -->
-            <label for="ballSize">Ball Size</label>
-            <button onclick="adjustBallSize(-0.1)">↓</button>
-            <button onclick="adjustBallSize(0.1)">↑</button>
+        <div class="control-group">
+            <label for="ballSizeControl">Ball Size: <span id="ballSizeValue">0.5</span></label>
+            <input type="range" id="ballSizeControl" min="0.1" max="2" step="0.1" value="0.5">
         </div>
-        <div class="control" style="color: #8A2BE2;"> <!-- BlueViolet color for Frequency -->
-            <label for="frequency">Frequency</label>
-            <button onclick="adjustValue('frequency', -1)">↓</button>
-            <button onclick="adjustValue('frequency', 1)">↑</button>
+        <div class="control-group">
+            <label for="frequencyControl">Frequency: <span id="frequencyValue">220</span> Hz</label>
+            <input type="range" id="frequencyControl" min="20" max="2000" step="1" value="220">
         </div>
-        <div class="control" style="color: #3CB371;"> <!-- MediumSeaGreen color for Volume -->
-            <label for="volume">Volume</label>
-            <button onclick="adjustValue('volume', -0.01)">↓</button>
-            <button onclick="adjustValue('volume', 0.01)">↑</button>
+        <div class="control-group">
+            <label for="volumeControl">Volume: <span id="volumeValue">0.3</span></label>
+            <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="0.3">
+        </div>
+        <div class="control-group">
+            <label for="ballColorControl">Ball Color:</label>
+            <input type="color" id="ballColorControl" value="#ff0000">
+        </div>
+        <div class="control-group">
+            <label for="bgColorControl">Background Color:</label>
+            <input type="color" id="bgColorControl" value="#000000">
+        </div>
+        <div class="control-group">
+            <label class="checkbox-label"><input type="checkbox" id="invertPanning"> Invert Sound Panning</label>
+        </div>
+        <div class="control-group">
+            <label for="textureControl">Ball Texture:</label>
+            <select id="textureControl">
+                <option value="solid" selected>Solid</option>
+                <option value="wireframe">Wireframe</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label for="textSizeControl">Text Size: <span id="textSizeValue">16</span>px</label>
+            <input type="range" id="textSizeControl" min="12" max="24" step="1" value="16">
         </div>
     </div>
-    <div class="sound-type-container">
+    <!-- Sound Type Container -->
+    <div class="sound-type-container" id="soundTypeContainer">
         <label><input type="radio" name="soundType" value="sine" checked>Sine</label>
         <label><input type="radio" name="soundType" value="square">Square</label>
         <label><input type="radio" name="soundType" value="sawtooth">Sawtooth</label>
         <label><input type="radio" name="soundType" value="triangle">Triangle</label>
     </div>
+    <!-- Questions Panel -->
+    <div class="questions-panel" id="questionsPanel">
+        <h2>Therapeutic Questions</h2>
+        <div class="question">
+            <label for="question1">1. How are you feeling today?</label>
+            <textarea id="question1" rows="3"></textarea>
+        </div>
+        <div class="question">
+            <label for="question2">2. What are the issues prompting you to do a session today?</label>
+            <textarea id="question2" rows="3"></textarea>
+        </div>
+        <div class="question">
+            <label>3. Now let's add detail to your Target to make it as vivid and real as possible:</label>
+            <div style="margin-left: 10px;">
+                <div class="question">
+                    <label for="question3a">- What images, sounds, or smells are triggered when you think of the Target?</label>
+                    <textarea id="question3a" rows="3"></textarea>
+                </div>
+                <div class="question">
+                    <label for="question3b">- What do you recall of the traumatic event that led you to do today's session?</label>
+                    <textarea id="question3b" rows="3"></textarea>
+                </div>
+                <div class="question">
+                    <label for="question3c">- What feelings or emotions come up when you think of the Target?</label>
+                    <textarea id="question3c" rows="3"></textarea>
+                </div>
+                <div class="question">
+                    <label for="question3d">- What is the most disturbing moment or aspect of the traumatic event?</label>
+                    <textarea id="question3d" rows="3"></textarea>
+                </div>
+                <div class="question">
+                    <label for="question3e">- What physical sensations do you experience when you think of the Target?</label>
+                    <textarea id="question3e" rows="3"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="question">
+            <label for="question4">4. Combine these answers into a single description of your Target that incorporates key elements of what you described:</label>
+            <textarea id="question4" rows="3"></textarea>
+        </div>
+        <div class="question">
+            <label for="question5">5. What are your negative beliefs?</label>
+            <textarea id="question5" rows="3"></textarea>
+        </div>
+        <div class="question">
+            <label for="question6">6. Write down some positive beliefs about yourself:</label>
+            <textarea id="question6" rows="3"></textarea>
+        </div>
+        <div class="question">
+            <label for="question7">7. What is your Emotional Distress Rating now when you think of the Target? (1-10)</label>
+            <input type="range" id="question7" min="1" max="10" step="1" value="1">
+            <div class="range-value">Rating: <span id="question7Value">1</span></div>
+        </div>
+    </div>
+    <!-- Start/End Buttons -->
     <button id="startButton">Start</button>
     <button id="endButton" style="display:none;">End</button>
     <script>
         let scene, camera, renderer;
         let geometry, material, mesh;
         let heartRate = 1.2, frequency = 220, volume = 0.3;
-        let maxHeartRate = 4;
         let oscillator, gainNode, audioContext, panner;
         let animationFrameId;
         let direction = 0.1;
         let isAudioStarted = false;
         let ballSize = 0.5;
+        let invertPanning = false;
+        let ballColor = "#ff0000";
+        let bgColor = "#000000";
+        let materialType = "solid";
 
         function init() {
             const sceneContainer = document.getElementById('scene-container');
@@ -97,25 +261,121 @@
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(sceneContainer.offsetWidth, sceneContainer.offsetHeight);
+            renderer.setSize(window.innerWidth, window.innerHeight);
             sceneContainer.appendChild(renderer.domElement);
 
-            geometry = new THREE.SphereGeometry(ballSize, 32, 32);
-            material = new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true });
-
+            geometry = new THREE.SphereGeometry(1, 32, 32);
+            material = new THREE.MeshBasicMaterial({ color: ballColor });
             mesh = new THREE.Mesh(geometry, material);
+            mesh.scale.set(ballSize, ballSize, ballSize);
             scene.add(mesh);
 
             camera.position.z = 5;
 
-            // Event listeners for control buttons
+            // Event listeners for controls
             document.getElementById('startButton').addEventListener('click', startAudio);
             document.getElementById('endButton').addEventListener('click', stopAudio);
+
+            document.getElementById('speedControl').addEventListener('input', (e) => {
+                heartRate = parseFloat(e.target.value);
+                document.getElementById('speedValue').innerText = heartRate.toFixed(1);
+            });
+            document.getElementById('ballSizeControl').addEventListener('input', (e) => {
+                ballSize = parseFloat(e.target.value);
+                document.getElementById('ballSizeValue').innerText = ballSize.toFixed(1);
+                mesh.scale.set(ballSize, ballSize, ballSize);
+            });
+            document.getElementById('frequencyControl').addEventListener('input', (e) => {
+                frequency = parseFloat(e.target.value);
+                document.getElementById('frequencyValue').innerText = frequency.toFixed(0);
+                if (oscillator) oscillator.frequency.value = frequency;
+            });
+            document.getElementById('volumeControl').addEventListener('input', (e) => {
+                volume = parseFloat(e.target.value);
+                document.getElementById('volumeValue').innerText = volume.toFixed(2);
+                if (gainNode) gainNode.gain.value = volume;
+            });
+            document.getElementById('ballColorControl').addEventListener('input', (e) => {
+                ballColor = e.target.value;
+                material.color.set(ballColor);
+            });
+            document.getElementById('bgColorControl').addEventListener('input', (e) => {
+                bgColor = e.target.value;
+                document.body.style.backgroundColor = bgColor;
+            });
+            document.getElementById('invertPanning').addEventListener('change', (e) => {
+                invertPanning = e.target.checked;
+            });
+            document.getElementById('textureControl').addEventListener('change', (e) => {
+                materialType = e.target.value;
+                updateMaterial();
+            });
+            document.getElementById('textSizeControl').addEventListener('input', (e) => {
+                let textSize = parseInt(e.target.value);
+                document.getElementById('textSizeValue').innerText = textSize;
+                document.getElementById('questionsPanel').style.fontSize = textSize + 'px';
+            });
+            document.getElementById('settingsButton').addEventListener('click', toggleControls);
+            document.getElementById('questionsButton').addEventListener('click', toggleQuestions);
+
+            // Update rating display
+            document.getElementById('question7').addEventListener('input', (e) => {
+                document.getElementById('question7Value').innerText = e.target.value;
+            });
+
+            window.addEventListener('resize', onWindowResize);
 
             // Event listeners for sound type radio buttons
             document.querySelectorAll('input[name="soundType"]').forEach((input) => {
                 input.addEventListener('change', updateSoundType);
             });
+        }
+
+        function toggleControls() {
+            const controlPanel = document.getElementById('controlPanel');
+            const soundTypeContainer = document.getElementById('soundTypeContainer');
+            const questionsPanel = document.getElementById('questionsPanel');
+
+            if (controlPanel.style.display === 'none') {
+                controlPanel.style.display = 'flex';
+                soundTypeContainer.style.display = 'block';
+                questionsPanel.style.display = 'none';
+            } else {
+                controlPanel.style.display = 'none';
+                soundTypeContainer.style.display = 'none';
+            }
+        }
+
+        function toggleQuestions() {
+            const questionsPanel = document.getElementById('questionsPanel');
+            const controlPanel = document.getElementById('controlPanel');
+            const soundTypeContainer = document.getElementById('soundTypeContainer');
+
+            if (questionsPanel.style.display === 'none') {
+                questionsPanel.style.display = 'block';
+                controlPanel.style.display = 'none';
+                soundTypeContainer.style.display = 'none';
+            } else {
+                questionsPanel.style.display = 'none';
+            }
+        }
+
+        function updateMaterial() {
+            scene.remove(mesh);
+            if (materialType === "wireframe") {
+                material = new THREE.MeshBasicMaterial({ color: ballColor, wireframe: true });
+            } else {
+                material = new THREE.MeshBasicMaterial({ color: ballColor });
+            }
+            mesh = new THREE.Mesh(geometry, material);
+            mesh.scale.set(ballSize, ballSize, ballSize);
+            scene.add(mesh);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
         function startAudio() {
@@ -131,7 +391,8 @@
             gainNode.connect(panner);
             panner.connect(audioContext.destination);
 
-            oscillator.type = "sine";
+            const soundType = document.querySelector('input[name="soundType"]:checked').value;
+            oscillator.type = soundType;
             oscillator.frequency.value = frequency;
             gainNode.gain.value = volume;
 
@@ -149,31 +410,13 @@
             if (mesh.position.x > 6.5 || mesh.position.x < -6.5) {
                 direction *= -1;
             }
-            panner.pan.value = Math.max(-1, Math.min(1, 2 * (mesh.position.x / 6.5)));
+            let panValue = 2 * (mesh.position.x / 6.5);
+            if (invertPanning) panValue *= -1;
+            panner.pan.value = Math.max(-1, Math.min(1, panValue));
+
             gainNode.gain.value = volume * (0.2 + 0.8 * Math.abs(mesh.position.x / 6.5));
 
             renderer.render(scene, camera);
-        }
-
-        function adjustBallSize(change) {
-            ballSize += change;
-            ballSize = Math.max(0.1, Math.min(2, ballSize)); // Adjust within a reasonable range
-            if (mesh) mesh.scale.set(ballSize, ballSize, ballSize); // Update the mesh scale
-        }
-
-        function adjustValue(type, change) {
-            if (type === 'heartRate') {
-                heartRate += change;
-                heartRate = Math.max(0, Math.min(maxHeartRate, heartRate));
-            } else if (type === 'frequency') {
-                frequency += change;
-                frequency = Math.max(20, Math.min(2000, frequency));
-                if (oscillator) oscillator.frequency.value = frequency;
-            } else if (type === 'volume') {
-                volume += change;
-                volume = Math.max(0, Math.min(1, volume));
-                if (gainNode) gainNode.gain.value = volume;
-            }
         }
 
         function stopAudio() {
@@ -192,7 +435,6 @@
             document.getElementById('startButton').style.display = "block";
             document.getElementById('endButton').style.display = 'none';
             isAudioStarted = false;
-            location.reload(); // Refresh the page to reset everything
         }
 
         function updateSoundType() {
@@ -202,8 +444,7 @@
             }
         }
 
-        init(); // Initialize the scene
+        init();
     </script>
-
 </body>
 </html>
