@@ -17,7 +17,7 @@ Lightweight, browser-based app for guided Eye Movement Desensitization and Repro
 
 ## How to Use
 
-1. Download the project to a folder in your computer.
+1. [Download](https://github.com/sm18lr88/EMDR-App/archive/refs/tags/v0.2.zip) the project to a folder in your computer.
 2. Open `index.html` in a browser.
 3. Adjust **Settings** (⚙️) for visuals and audio preferences.
 4. Use **Therapeutic Guide** (🧠) to answer reflection questions.
