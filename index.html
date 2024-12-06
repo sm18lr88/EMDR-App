@@ -1,115 +1,51 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>EMDR App</title>
+    <title>Enhanced EMDR Therapy App</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
     <style>
+        :root {
+            --primary-color: #007ACC;
+            --secondary-color: #2D2D2D;
+            --text-color: #FFFFFF;
+            --background-color: #1E1E1E;
+            --shadow-color: rgba(0, 0, 0, 0.7);
+            --panel-background: rgba(30, 30, 30, 0.95);
+            --accent-color: #00BCD4;
+        }
+
         body {
-            margin: 0;
-            color: #CCCCCC;
-            background-color: #1E1E1E;
+            color: var(--text-color);
+            background-color: var(--background-color);
             overflow: hidden;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        #scene-container {
-            width: 100%;
-            height: 100vh;
-            display: block;
-        }
-        /* Control Panel Styles */
-        .control-panel {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            padding: 10px;
-            background: rgba(30, 30, 30, 0.9);
-            box-sizing: border-box;
-            display: none;
-            flex-wrap: wrap;
-            justify-content: space-around;
-            max-height: 50%;
-            overflow-y: auto;
-            font-size: 14px;
-            color: #FFFFFF;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.7);
-        }
-        .control-group {
-            margin: 5px;
-            min-width: 120px;
-            display: flex;
-            flex-direction: column;
-        }
-        .control-group label {
-            margin-bottom: 5px;
-            font-size: 13px;
-        }
-        .control-group input[type="number"],
-        .control-group select {
-            width: 60px;
-            padding: 5px;
-            background-color: #2D2D2D;
-            color: #FFFFFF;
-            border: 1px solid #555;
-            border-radius: 4px;
-            font-size: 13px;
-        }
-        .control-group input[type="number"]:focus {
-            outline: none;
-        }
-        .control-group input[type="number"] {
-            text-align: right;
-        }
-        .control-group input[type="number"]::-webkit-inner-spin-button,
-        .control-group input[type="number"]::-webkit-outer-spin-button {
-            opacity: 1;
-        }
-        .control-group input[type="number"] {
-            -moz-appearance: textfield;
-        }
-        .control-group input[type="number"]:hover {
-            cursor: ns-resize;
-        }
-        .control-group input[type="number"]:disabled {
-            opacity: 0.5;
-        }
-        .control-group input[type="color"] {
-            width: 30px;
-            height: 30px;
-            border: none;
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            margin: 0;
             padding: 0;
-            background: none;
-            cursor: pointer;
         }
-        .control-group .checkbox-label {
-            display: flex;
-            align-items: center;
-            font-size: 13px;
+
+        #scene-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
         }
-        .control-group .checkbox-label input {
-            margin-right: 5px;
-        }
-        #startButton, #endButton { 
-            position: absolute; 
-            bottom: 10px;
-            right: 10px;
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #007ACC;
-            color: #FFFFFF;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            opacity: 1;
-            transition: opacity 0.5s;
-            z-index: 999;
-        }
-        #startButton.hidden, #endButton.hidden {
-            opacity: 0;
-        }
-        /* Icons */
-        .icon-button {
+
+        .main-controls {
             position: absolute;
             top: 10px;
+            left: 10px;
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            z-index: 999;
+        }
+
+        .icon-button {
             width: 40px;
             height: 40px;
             background: rgba(0, 0, 0, 0.7);
@@ -120,477 +56,905 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 999;
+            border-radius: 6px;
+            position: relative;
         }
-        #settingsButton {
-            left: 10px;
+
+        .icon-button:hover {
+            background: rgba(0,0,0,0.9);
         }
-        #questionsButton {
-            left: 60px;
-        }
-        /* Sound Type Container */
-        .sound-type-container {
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            text-align: center;
+            padding: 6px 10px;
+            border-radius: 4px;
             position: absolute;
-            top: 60px;
-            left: 10px;
-            background: rgba(30, 30, 30, 0.9);
-            padding: 10px;
-            border-radius: 5px;
-            display: none;
-            color: #FFFFFF;
-            z-index: 999;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            white-space: nowrap;
         }
-        .sound-type-container label {
-            display: block;
-            color: white;
-            font-size: 13px;
-            margin-bottom: 5px;
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
         }
-        /* Questions Panel */
+
+        .settings-panel,
         .questions-panel {
+            display: none;
             position: absolute;
             top: 60px;
-            left: 10%;
-            right: 10%;
-            bottom: 10px;
-            background: rgba(30, 30, 30, 0.95);
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            background: var(--panel-background);
+            border-radius: 12px;
             padding: 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: fadeIn 0.3s ease-out;
+            z-index: 999;
+            max-height: 70vh;
             overflow-y: auto;
             overflow-x: hidden;
-            display: none;
-            box-sizing: border-box;
-            color: #FFFFFF;
-            font-size: 14px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.7);
-            border-radius: 8px;
-            z-index: 999;
         }
+
+        /* Make questions panel slightly wider */
+        .questions-panel {
+            max-width: 650px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .settings-panel h2,
         .questions-panel h2 {
-            margin-top: 0;
-            text-align: center;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .settings-section {
             margin-bottom: 20px;
         }
-        .question {
-            margin-bottom: 20px;
+
+        .settings-section h3 {
+            margin-bottom: 10px;
+            font-size: 1.1em;
         }
-        .question label {
-            display: block;
+
+        .control-group {
+            margin-bottom: 10px;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .control-group label {
             margin-bottom: 5px;
         }
-        .question textarea {
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--secondary-color);
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            background: var(--accent-color);
+        }
+
+        .slider-value {
+            margin-left: 10px;
+            font-size: 13px;
+        }
+
+        .enhanced-select,
+        input[type="color"] {
+            padding: 5px;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            border: 1px solid #555;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        select.enhanced-select {
+            width: 100%;
+        }
+
+        .color-controls {
+            display: flex;
+            gap: 20px;
+        }
+
+        .color-preset-btn,
+        .gradient-preset-btn {
+            margin-left: 10px;
+            padding: 5px 10px;
+            background: var(--secondary-color);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .color-preset-btn:hover,
+        .gradient-preset-btn:hover {
+            background: var(--accent-color);
+        }
+
+        .session-controls {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+            z-index: 999;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px var(--shadow-color);
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+        }
+
+        .btn-primary:hover {
+            background-color: #0088E4;
+        }
+
+        .btn-secondary {
+            background-color: #555;
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background-color: #666;
+        }
+
+        .btn-danger {
+            background-color: #F44336;
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            background-color: #D32F2F;
+        }
+
+        /* Fade unobtrusive timer without progress bar */
+        .session-timer {
+            display: none;
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #ffffff;
+            opacity: 0.6;
+            z-index:999;
+        }
+
+        .questions-panel .question {
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .questions-panel .question label {
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .questions-panel textarea {
             width: 100%;
             resize: vertical;
             padding: 10px;
-            background-color: #2D2D2D;
-            color: #FFFFFF;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
             border: 1px solid #555;
             border-radius: 4px;
             font-family: inherit;
             font-size: 14px;
         }
-        .question input[type="range"] {
+
+        .questions-panel input[type="range"] {
             width: 100%;
         }
-        .question .range-value {
+
+        .questions-panel .range-value {
             text-align: right;
             font-size: 13px;
         }
-        .sub-questions {
-            padding-left: 20px;
-        }
     </style>
-    <script src="three.min.js"></script>
 </head>
 <body>
     <div id="scene-container"></div>
-    <!-- Icons -->
-    <button id="settingsButton" class="icon-button" title="Settings">
-        &#9881;
-    </button>
-    <button id="questionsButton" class="icon-button" title="Therapeutic Guidance">
-        &#127800;
-    </button>
-    <!-- Control Panel -->
-    <div class="control-panel" id="controlPanel">
-        <div class="control-group">
-            <label for="speedControl">Speed:</label>
-            <input type="number" id="speedControl" min="0.1" max="5" step="0.1" value="1.2" onkeydown="return false;">
+    
+    <div class="main-controls">
+        <button id="settingsButton" class="icon-button tooltip" title="Settings">
+            <span class="material-icons">settings</span>
+            <span class="tooltip-text">Adjust session settings</span>
+        </button>
+        <button id="questionsButton" class="icon-button tooltip" title="Therapeutic Guide">
+            <span class="material-icons">psychology</span>
+            <span class="tooltip-text">Open therapeutic guidance</span>
+        </button>
+        <button id="saveButton" class="icon-button tooltip" title="Save Q&A">
+            <span class="material-icons">save</span>
+            <span class="tooltip-text">Save Q&A and Ratings</span>
+        </button>
+        <button id="fullscreenButton" class="icon-button tooltip" title="Toggle Fullscreen">
+            <span class="material-icons">fullscreen</span>
+            <span class="tooltip-text">Toggle Fullscreen</span>
+        </button>
+    </div>
+
+    <div class="session-timer" id="sessionTimer">
+        <span id="timerDisplay">00:00</span>
+    </div>
+
+    <div class="settings-panel" id="settingsPanel">
+        <h2>Session Settings</h2>
+        <div class="question" style="font-style: italic; font-size: 12px; margin-bottom: 10px;">
+            The smoothness of the ball depends mainly on your computer's screen refresh rate.
         </div>
-        <div class="control-group">
-            <label for="ballSizeControl">Ball Size:</label>
-            <input type="number" id="ballSizeControl" min="0.1" max="2" step="0.1" value="0.5" onkeydown="return false;">
+        <div class="settings-section">
+            <h3>Visual Settings</h3>
+            <div class="control-group">
+                <label for="textureSelect">Ball Texture</label>
+                <select id="textureSelect" class="enhanced-select">
+                    <option value="solid" selected>Solid</option>
+                    <option value="wireframe">Wireframe</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="ballSizeSlider">Ball Size</label>
+                <div class="slider-container">
+                    <input type="range" id="ballSizeSlider" class="slider" min="0.1" max="2" step="0.1" value="0.5">
+                    <span class="slider-value" id="ballSizeValue">0.5</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="speedSlider">Movement Speed</label>
+                <div class="slider-container">
+                    <input type="range" id="speedSlider" class="slider" min="0.1" max="5" step="0.1" value="1.2">
+                    <span class="slider-value" id="speedValue">1.2</span>
+                </div>
+            </div>
+
+            <div class="color-controls">
+                <div class="control-group">
+                    <label for="ballColor">Ball Color</label>
+                    <input type="color" id="ballColor" value="#ff0000">
+                    <button class="color-preset-btn" data-color="#ff0000">Red</button>
+                    <button class="color-preset-btn" data-color="#00ff00">Green</button>
+                    <button class="color-preset-btn" data-color="#0000ff">Blue</button>
+                </div>
+                
+                <div class="control-group">
+                    <label for="bgColor">Background</label>
+                    <input type="color" id="bgColor" value="#000000">
+                    <button class="gradient-preset-btn" data-gradient="dark">Dark Gradient</button>
+                    <button class="gradient-preset-btn" data-gradient="calm">Calm Gradient</button>
+                </div>
+            </div>
+
+            <!-- Comment out effectSelect as requested -->
+            <!-- 
+            <div class="control-group">
+                <label for="effectSelect">Visual Effects</label>
+                <select id="effectSelect" class="enhanced-select" multiple>
+                    <option value="glow">Glow Effect</option>
+                    <option value="trail">Motion Trail</option>
+                    <option value="particles">Particle System</option>
+                    <option value="shadows">Enhanced Shadows</option>
+                </select>
+            </div>
+            -->
         </div>
-        <div class="control-group">
-            <label for="frequencyControl">Frequency (Hz):</label>
-            <input type="number" id="frequencyControl" min="20" max="2000" step="1" value="220" onkeydown="return false;">
-        </div>
-        <div class="control-group">
-            <label for="volumeControl">Volume:</label>
-            <input type="number" id="volumeControl" min="0" max="1" step="0.01" value="0.3" onkeydown="return false;">
-        </div>
-        <div class="control-group">
-            <label for="ballColorControl">Ball Color:</label>
-            <input type="color" id="ballColorControl" value="#ff0000">
-        </div>
-        <div class="control-group">
-            <label for="bgColorControl">Background Color:</label>
-            <input type="color" id="bgColorControl" value="#000000">
-        </div>
-        <div class="control-group">
-            <label for="fontColorControl">Font Color:</label>
-            <input type="color" id="fontColorControl" value="#FFFFFF">
-        </div>
-        <div class="control-group">
-            <label for="fontTypeControl">Font Type:</label>
-            <select id="fontTypeControl">
-                <option value="'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" selected>Default</option>
-                <option value="Arial, sans-serif">Arial</option>
-                <option value="'Courier New', Courier, monospace">Courier New</option>
-                <option value="Georgia, serif">Georgia</option>
-                <option value="Tahoma, Geneva, sans-serif">Tahoma</option>
-                <option value="'Times New Roman', Times, serif">Times New Roman</option>
-                <option value="Verdana, Geneva, sans-serif">Verdana</option>
-            </select>
-        </div>
-        <div class="control-group">
-            <label class="checkbox-label"><input type="checkbox" id="invertPanning"> Invert Sound Panning</label>
-        </div>
-        <div class="control-group">
-            <label for="textureControl">Ball Texture:</label>
-            <select id="textureControl">
-                <option value="solid" selected>Solid</option>
-                <option value="wireframe">Wireframe</option>
-            </select>
-        </div>
-        <div class="control-group">
-            <label for="textSizeControl">Text Size (px):</label>
-            <input type="number" id="textSizeControl" min="12" max="24" step="1" value="16" onkeydown="return false;">
+
+        <div class="settings-section">
+            <h3>Audio Settings</h3>
+            <!-- Frequency slider and invert panning checkbox as requested -->
+            <div class="control-group">
+                <label for="soundTypeSelect">Primary Sound</label>
+                <select id="soundTypeSelect" class="enhanced-select">
+                    <option value="sine">Sine Wave</option>
+                    <option value="square">Square Wave</option>
+                    <option value="sawtooth">Sawtooth</option>
+                    <option value="triangle">Triangle</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label for="frequencyControl">Frequency (Hz)</label>
+                <div class="slider-container">
+                    <input type="range" id="frequencyControl" class="slider" min="20" max="2000" step="1" value="220">
+                    <span class="slider-value" id="frequencyValue">220 Hz</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="invertPanning"> Invert Sound Panning
+                </label>
+            </div>
+
+            <div class="control-group">
+                <label for="mainVolumeSlider">Volume</label>
+                <div class="slider-container">
+                    <input type="range" id="mainVolumeSlider" class="slider" min="0" max="1" step="0.01" value="0.3">
+                    <span class="slider-value" id="mainVolumeValue">30%</span>
+                </div>
+            </div>
         </div>
     </div>
-    <!-- Sound Type Container -->
-    <div class="sound-type-container" id="soundTypeContainer">
-        <label><input type="radio" name="soundType" value="sine" checked>Sine</label>
-        <label><input type="radio" name="soundType" value="square">Square</label>
-        <label><input type="radio" name="soundType" value="sawtooth">Sawtooth</label>
-        <label><input type="radio" name="soundType" value="triangle">Triangle</label>
-    </div>
-    <!-- Questions Panel -->
+
     <div class="questions-panel" id="questionsPanel">
         <h2>Therapeutic Guidance</h2>
-        <div class="question" style="font-style: italic; font-size: 13px; margin-bottom: 30px;">
-            Note: If you do not feel any emotions when describing your Target issue, it might indicate a form of psychological dissociation. In that case, it's adviced to seek professional guidance to help you become unstuck.
+        <div class="question" style="font-style: italic; font-size: 11px; margin-bottom: 10px;">
+            Note 1: This app is ideally used after learning about EMDR from any course, even online courses.
+        </div>
+        <div class="question" style="font-style: italic; font-size: 11px; margin-bottom: 30px;">
+            Note 2: If you do not feel any emotion about the target issue, this might indicate dissociation.
+            Consider seeking professional guidance to help safely unfreeze your emotions.
         </div>
         <div class="question">
             <label for="question1">1. How are you feeling today?</label>
             <textarea id="question1" rows="3"></textarea>
         </div>
         <div class="question">
-            <label for="question2">2. What are the issues prompting you to do a session today?</label>
+            <label for="question2">2. What issues are prompting today's session?</label>
             <textarea id="question2" rows="3"></textarea>
         </div>
         <div class="question">
-            <label>3. Now let's add detail to your Target to make it as vivid and real as possible:</label>
-            <div class="sub-questions">
+            <label>3. Detailing your Target:</label>
+            <div style="padding-left:20px;">
                 <div class="question">
-                    <label for="question3a">- What images, sounds, or smells are triggered when you think of the Target?</label>
+                    <label for="question3a">- What images, sounds, or smells are triggered when thinking about the target issue?</label>
                     <textarea id="question3a" rows="3"></textarea>
                 </div>
                 <div class="question">
-                    <label for="question3b">- What do you recall of the traumatic event that led you to do today's session?</label>
+                    <label for="question3b">- What do you recall about the issue?</label>
                     <textarea id="question3b" rows="3"></textarea>
                 </div>
                 <div class="question">
-                    <label for="question3c">- What feelings or emotions come up when you think of the Target?</label>
+                    <label for="question3c">- What feelings or emotions come up?</label>
                     <textarea id="question3c" rows="3"></textarea>
                 </div>
                 <div class="question">
-                    <label for="question3d">- What is the most disturbing moment or aspect of the traumatic event?</label>
+                    <label for="question3d">- Most disturbing moment about it?</label>
                     <textarea id="question3d" rows="3"></textarea>
                 </div>
                 <div class="question">
-                    <label for="question3e">- What physical sensations do you experience when you think of the Target?</label>
+                    <label for="question3e">- When thinking about the issue, what physical sensations do you feel? Where do you feel them?</label>
                     <textarea id="question3e" rows="3"></textarea>
                 </div>
             </div>
         </div>
         <div class="question">
-            <label for="question4">4. Combine these answers into a single description of your Target that incorporates key elements of what you described:</label>
+            <label for="question4">4. Combine these into a single description of your Target issue:</label>
             <textarea id="question4" rows="3"></textarea>
         </div>
         <div class="question">
-            <label for="question5">5. What are your negative beliefs?</label>
+            <label for="question5">5. Write any negative beliefs about yourself regarding this.</label>
             <textarea id="question5" rows="3"></textarea>
         </div>
         <div class="question">
-            <label for="question6">6. Write down some positive beliefs about yourself:</label>
+            <label for="question6">6. Now write positive beliefs you can really believe about yourself regarding this.</label>
             <textarea id="question6" rows="3"></textarea>
         </div>
         <div class="question">
-            <label for="question7">7. What is your Emotional Distress Rating now when you think of the Target? (1-10)</label>
+            <label for="question7">7. Current Emotional Distress Rating (1-10)?</label>
             <input type="range" id="question7" min="1" max="10" step="1" value="1">
             <div class="range-value">Rating: <span id="question7Value">1</span></div>
         </div>
         <div class="question">
-            <label>8. Now, please take 10-40 minutes to focus on the target and do EMDR while thinking about the issue. After that session, return here.</label>
+            <label>8. Take 10-40 minutes to do EMDR on the target, then return here.</label>
         </div>
         <div class="question">
-            <label for="question9">9. After your EMDR session, what is your Emotional Distress Rating now? (1-10)</label>
+            <label for="question9">9. Post-EMDR Distress Rating (1-10)?</label>
             <input type="range" id="question9" min="1" max="10" step="1" value="1">
             <div class="range-value">Rating: <span id="question9Value">1</span></div>
         </div>
         <div class="question">
-            <label>10. You can continue doing EMDR on this issue as needed until you feel sufficiently at ease.</label>
+            <label>10. You can continue doing EMDR as needed until you feel at ease.</label>
         </div>
     </div>
-    <!-- Start/End Buttons -->
-    <button id="startButton">Start</button>
-    <button id="endButton" style="display:none;">End</button>
+
+    <div class="session-controls">
+        <button id="startButton" class="btn btn-primary">
+            <span class="material-icons">play_arrow</span>
+            Start
+        </button>
+        <!-- Remove pause button as requested -->
+        <!-- <button id="pauseButton" ... >Pause</button> -->
+        <button id="endButton" class="btn btn-danger" style="display: none;">
+            <span class="material-icons">stop</span>
+            End
+        </button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        let scene, camera, renderer;
-        let geometry, material, mesh;
-        let heartRate = 1.2, frequency = 220, volume = 0.3;
-        let oscillator, gainNode, audioContext, panner;
-        let animationFrameId;
-        let direction = 0.1;
-        let isAudioStarted = false;
-        let ballSize = 0.5;
-        let invertPanning = false;
-        let ballColor = "#ff0000";
-        let bgColor = "#000000";
-        let materialType = "solid";
-        let fontColor = "#FFFFFF";
-        let fontType = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
-        let textSize = 16;
+        class EMDRApp {
+            constructor() {
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+                this.ball = null;
+                this.direction = 0.1;
+                this.audioContext = null;
+                this.oscillator = null;
+                this.gainNode = null;
+                this.panner = null;
+                this.isSessionActive = false;
+                this.sessionTimer = null;
+                this.animationFrameId = null;
+                this.isPanelOpen = false;
+                this.isFullScreen = false;
 
-        function init() {
-            const sceneContainer = document.getElementById('scene-container');
-            scene = new THREE.Scene();
-            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                this.settings = {
+                    visual: {
+                        ballSize: 0.5,
+                        speed: 1.2,
+                        texture: 'solid',
+                        ballColor: '#ff0000',
+                        backgroundColor: '#000000',
+                        isGradient: false,
+                        gradientType: '',
+                        // effects: [] // commented out since no effects now
+                    },
+                    audio: {
+                        mainVolume: 0.3,
+                        primarySound: 'sine',
+                        frequency: 220,
+                        invertPanning: false
+                    }
+                };
 
-            renderer = new THREE.WebGLRenderer({ antialias: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            sceneContainer.appendChild(renderer.domElement);
+                this.init();
+                this.setupEventListeners();
+            }
 
-            geometry = new THREE.SphereGeometry(1, 32, 32);
-            material = new THREE.MeshBasicMaterial({ color: ballColor });
-            mesh = new THREE.Mesh(geometry, material);
-            mesh.scale.set(ballSize, ballSize, ballSize);
-            scene.add(mesh);
+            init() {
+                this.initThreeJS();
+                this.applySettings();
+                this.renderScene();
+            }
 
-            camera.position.z = 5;
+            initThreeJS() {
+                this.scene = new THREE.Scene();
+                this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                this.camera.position.z = 5;
 
-            // Event listeners for controls
-            document.getElementById('startButton').addEventListener('click', startAudio);
-            document.getElementById('endButton').addEventListener('click', stopAudio);
+                this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+                document.getElementById('scene-container').appendChild(this.renderer.domElement);
 
-            document.getElementById('speedControl').addEventListener('input', (e) => {
-                heartRate = parseFloat(e.target.value);
-            });
-            document.getElementById('ballSizeControl').addEventListener('input', (e) => {
-                ballSize = parseFloat(e.target.value);
-                mesh.scale.set(ballSize, ballSize, ballSize);
-            });
-            document.getElementById('frequencyControl').addEventListener('input', (e) => {
-                frequency = parseFloat(e.target.value);
-                if (oscillator) oscillator.frequency.value = frequency;
-            });
-            document.getElementById('volumeControl').addEventListener('input', (e) => {
-                volume = parseFloat(e.target.value);
-                if (gainNode) gainNode.gain.value = volume;
-            });
-            document.getElementById('ballColorControl').addEventListener('input', (e) => {
-                ballColor = e.target.value;
-                material.color.set(ballColor);
-            });
-            document.getElementById('bgColorControl').addEventListener('input', (e) => {
-                bgColor = e.target.value;
-                document.body.style.backgroundColor = bgColor;
-            });
-            document.getElementById('fontColorControl').addEventListener('input', (e) => {
-                fontColor = e.target.value;
-                updateFontStyles();
-            });
-            document.getElementById('fontTypeControl').addEventListener('change', (e) => {
-                fontType = e.target.value;
-                updateFontStyles();
-            });
-            document.getElementById('invertPanning').addEventListener('change', (e) => {
-                invertPanning = e.target.checked;
-            });
-            document.getElementById('textureControl').addEventListener('change', (e) => {
-                materialType = e.target.value;
-                updateMaterial();
-            });
-            document.getElementById('textSizeControl').addEventListener('input', (e) => {
-                textSize = parseInt(e.target.value);
-                updateFontStyles();
-            });
-            document.getElementById('settingsButton').addEventListener('click', toggleControls);
-            document.getElementById('questionsButton').addEventListener('click', toggleQuestions);
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+                this.scene.add(ambientLight);
 
-            // Update rating display for question7 and question9
-            document.getElementById('question7').addEventListener('input', (e) => {
-                document.getElementById('question7Value').innerText = e.target.value;
-            });
-            document.getElementById('question9').addEventListener('input', (e) => {
-                document.getElementById('question9Value').innerText = e.target.value;
-            });
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+                directionalLight.position.set(5,5,5);
+                this.scene.add(directionalLight);
 
-            window.addEventListener('resize', onWindowResize);
+                this.createBall();
+            }
 
-            // Event listeners for sound type radio buttons
-            document.querySelectorAll('input[name="soundType"]').forEach((input) => {
-                input.addEventListener('change', updateSoundType);
-            });
-
-            // Spacebar to stop animation
-            document.addEventListener('keydown', (e) => {
-                if (e.code === 'Space' && isAudioStarted) {
-                    stopAudio();
+            createBall() {
+                if (this.ball) this.scene.remove(this.ball);
+                const geometry = new THREE.SphereGeometry(1,32,32);
+                let mat;
+                if (this.settings.visual.texture === 'wireframe') {
+                    mat = new THREE.MeshBasicMaterial({ color: this.settings.visual.ballColor, wireframe:true });
+                } else {
+                    mat = new THREE.MeshBasicMaterial({ color: this.settings.visual.ballColor });
                 }
-            });
+                this.ball = new THREE.Mesh(geometry, mat);
+                this.ball.scale.set(this.settings.visual.ballSize,this.settings.visual.ballSize,this.settings.visual.ballSize);
+                this.scene.add(this.ball);
+            }
 
-            updateFontStyles();
-        }
+            applySettings() {
+                // If pure black and no gradient chosen, just solid black background
+                if (!this.settings.visual.isGradient) {
+                    this.renderer.setClearAlpha(1);
+                    this.scene.background = new THREE.Color(this.settings.visual.backgroundColor);
+                    document.body.style.background = this.settings.visual.backgroundColor;
+                } else {
+                    // Gradient chosen
+                    this.renderer.setClearAlpha(0);
+                    this.scene.background = null;
+                    if (this.settings.visual.gradientType === 'dark') {
+                        document.body.style.background = "linear-gradient(to bottom, #000000, #1E1E1E)";
+                    } else if (this.settings.visual.gradientType === 'calm') {
+                        document.body.style.background = "linear-gradient(to bottom, #001f3f, #1E1E1E)";
+                    }
+                }
 
-        function updateFontStyles() {
-            const questionsPanel = document.getElementById('questionsPanel');
-            questionsPanel.style.color = fontColor;
-            questionsPanel.style.fontFamily = fontType;
-            questionsPanel.style.fontSize = textSize + 'px';
+                this.createBall();
+                this.renderScene();
+            }
 
-            const controlPanel = document.getElementById('controlPanel');
-            controlPanel.style.color = fontColor;
-            controlPanel.style.fontFamily = fontType;
-            controlPanel.style.fontSize = textSize + 'px';
-        }
+            renderScene() {
+                this.renderer.render(this.scene, this.camera);
+            }
 
-        function toggleControls() {
-            const controlPanel = document.getElementById('controlPanel');
-            const soundTypeContainer = document.getElementById('soundTypeContainer');
-            const questionsPanel = document.getElementById('questionsPanel');
+            startSession() {
+                if (this.isSessionActive) return;
+                this.isSessionActive = true;
+                this.sessionStartTime = Date.now();
+                this.closeAllPanels();
+                this.startAudioChain();
+                this.startTimer();
+                this.updateSessionUI(true);
+                this.animate();
+            }
 
-            if (controlPanel.style.display === 'none') {
-                controlPanel.style.display = 'flex';
-                soundTypeContainer.style.display = 'block';
-                questionsPanel.style.display = 'none';
-            } else {
-                controlPanel.style.display = 'none';
-                soundTypeContainer.style.display = 'none';
+            startAudioChain() {
+                this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                this.oscillator = this.audioContext.createOscillator();
+                this.gainNode = this.audioContext.createGain();
+                this.panner = this.audioContext.createStereoPanner();
+
+                this.oscillator.type = this.settings.audio.primarySound;
+                this.oscillator.frequency.value = this.settings.audio.frequency;
+                this.gainNode.gain.value = this.settings.audio.mainVolume;
+
+                this.oscillator.connect(this.gainNode);
+                this.gainNode.connect(this.panner);
+                this.panner.connect(this.audioContext.destination);
+
+                this.oscillator.start();
+            }
+
+            animate() {
+                if (!this.isSessionActive) return;
+                this.animationFrameId = requestAnimationFrame(() => this.animate());
+
+                if (this.isPanelOpen) {
+                    // Panels open, do not move the ball
+                    this.renderScene();
+                    return;
+                }
+
+                this.ball.position.x += this.direction * this.settings.visual.speed;
+                if (this.ball.position.x > 6.5 || this.ball.position.x < -6.5) {
+                    this.direction *= -1;
+                }
+
+                let panValue = 2 * (this.ball.position.x / 6.5);
+                if (this.settings.audio.invertPanning) panValue *= -1;
+                this.panner.pan.value = Math.max(-1, Math.min(1, panValue));
+
+                const positionFactor = Math.abs(this.ball.position.x / 6.5);
+                const volume = this.settings.audio.mainVolume * (0.2 + 0.8 * positionFactor);
+                this.gainNode.gain.value = volume;
+
+                this.oscillator.frequency.value = this.settings.audio.frequency;
+
+                this.renderScene();
+            }
+
+            startTimer() {
+                document.getElementById('sessionTimer').style.display = 'block';
+                this.sessionTimer = setInterval(() => {
+                    const elapsed = Date.now() - this.sessionStartTime;
+                    const minutes = Math.floor(elapsed / 60000);
+                    const seconds = Math.floor((elapsed % 60000) / 1000);
+                    document.getElementById('timerDisplay').textContent =
+                        `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+                }, 1000);
+            }
+
+            endSession() {
+                if (!this.isSessionActive) return;
+                this.isSessionActive = false;
+                if (this.sessionTimer) clearInterval(this.sessionTimer);
+                if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
+                if (this.oscillator) {
+                    try { this.oscillator.stop(); } catch(e){}
+                    this.oscillator.disconnect();
+                    this.oscillator = null;
+                }
+                if (this.audioContext) {
+                    this.audioContext.close();
+                    this.audioContext = null;
+                }
+                this.ball.position.set(0,0,0);
+                this.updateSessionUI(false);
+                this.saveSessionData();
+                this.renderScene();
+            }
+
+            updateSessionUI(running) {
+                const startBtn = document.getElementById('startButton');
+                const endBtn = document.getElementById('endButton');
+                const sessionTimer = document.getElementById('sessionTimer');
+
+                if (running) {
+                    startBtn.style.display = 'none';
+                    endBtn.style.display = 'inline-block';
+                    sessionTimer.style.display = 'block';
+                } else {
+                    startBtn.style.display = 'inline-block';
+                    endBtn.style.display = 'none';
+                    sessionTimer.style.display = 'none';
+                }
+            }
+
+            saveSessionData() {
+                const sessionData = {
+                    date: new Date().toISOString(),
+                    duration: Date.now() - this.sessionStartTime,
+                    settings: { ...this.settings }
+                };
+                let sessions = JSON.parse(localStorage.getItem('emdrSessions') || '[]');
+                sessions.push(sessionData);
+                localStorage.setItem('emdrSessions', JSON.stringify(sessions));
+            }
+
+            saveQA() {
+                const questions = [
+                    {id:'question1', label:'How are you feeling today?'},
+                    {id:'question2', label:'Issues prompting the session?'},
+                    {id:'question3a', label:'Images, sounds, smells triggered?'},
+                    {id:'question3b', label:'Recall of traumatic event?'},
+                    {id:'question3c', label:'Feelings or emotions?'},
+                    {id:'question3d', label:'Most disturbing moment?'},
+                    {id:'question3e', label:'Physical sensations?'},
+                    {id:'question4', label:'Combined description of Target:'},
+                    {id:'question5', label:'Negative beliefs?'},
+                    {id:'question6', label:'Positive beliefs?'},
+                ];
+                const q7 = document.getElementById('question7').value;
+                const q9 = document.getElementById('question9').value;
+
+                let text = "EMDR Session Q&A\n\n";
+                questions.forEach(q => {
+                    const val = document.getElementById(q.id).value;
+                    text += q.label + "\n" + val + "\n\n";
+                });
+
+                text += "Initial Distress Rating: " + q7 + "\n\n";
+                text += "Post-EMDR Distress Rating: " + q9 + "\n\n";
+
+                const blob = new Blob([text], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'EMDR_Session_QA.txt';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            handleKeyPress(e) {
+                if (e.code === 'Escape') {
+                    if (this.isPanelOpen) {
+                        this.closeAllPanels();
+                        e.preventDefault(); // Attempt to prevent fullscreen exit
+                    }
+                    // If no panel is open, do nothing (try to prevent default)
+                    else {
+                        e.preventDefault(); // Attempt to prevent fullscreen exit by the browser
+                    }
+                } else if (e.code === 'Space') {
+                    // Space toggles start/stop if no panel is open
+                    if (!this.isPanelOpen) {
+                        if (this.isSessionActive) {
+                            this.endSession();
+                        } else {
+                            this.startSession();
+                        }
+                    }
+                    e.preventDefault();
+                }
+            }
+
+            closeAllPanels() {
+                document.getElementById('settingsPanel').style.display = 'none';
+                document.getElementById('questionsPanel').style.display = 'none';
+                this.isPanelOpen = false;
+            }
+
+            applyAndSaveSettings() {
+                this.applySettings();
+                this.saveSettings();
+            }
+
+            saveSettings() {
+                localStorage.setItem('emdrSettings', JSON.stringify(this.settings));
+            }
+
+            setupEventListeners() {
+                window.addEventListener('resize', () => this.onWindowResize());
+
+                document.getElementById('startButton').addEventListener('click', () => this.startSession());
+                document.getElementById('endButton').addEventListener('click', () => this.endSession());
+
+                document.getElementById('settingsButton').addEventListener('click', () => {
+                    const sp = document.getElementById('settingsPanel');
+                    const qp = document.getElementById('questionsPanel');
+                    qp.style.display = 'none';
+                    sp.style.display = (sp.style.display === 'block')?'none':'block';
+                    this.isPanelOpen = (sp.style.display === 'block');
+                });
+
+                document.getElementById('questionsButton').addEventListener('click', () => {
+                    const sp = document.getElementById('settingsPanel');
+                    const qp = document.getElementById('questionsPanel');
+                    sp.style.display = 'none';
+                    qp.style.display = (qp.style.display === 'block')?'none':'block';
+                    this.isPanelOpen = (qp.style.display === 'block');
+                });
+
+                document.getElementById('saveButton').addEventListener('click', () => this.saveQA());
+
+                // Fullscreen button
+                document.getElementById('fullscreenButton').addEventListener('click', () => {
+                    if (!this.isFullScreen) {
+                        document.documentElement.requestFullscreen().catch(err => console.log(err));
+                    } else {
+                        if (document.fullscreenElement) {
+                            document.exitFullscreen().catch(err => console.log(err));
+                        }
+                    }
+                });
+
+                document.addEventListener('fullscreenchange', () => {
+                    this.isFullScreen = !!document.fullscreenElement;
+                    const fsIcon = document.getElementById('fullscreenButton').querySelector('.material-icons');
+                    fsIcon.textContent = this.isFullScreen ? 'fullscreen_exit' : 'fullscreen';
+                });
+
+                const applyInstant = () => {
+                    this.applySettings();
+                    this.saveSettings();
+                };
+
+                document.getElementById('textureSelect').addEventListener('change', (e) => {
+                    this.settings.visual.texture = e.target.value;
+                    applyInstant();
+                });
+
+                document.getElementById('ballSizeSlider').addEventListener('input', (e) => {
+                    this.settings.visual.ballSize = parseFloat(e.target.value);
+                    document.getElementById('ballSizeValue').textContent = e.target.value;
+                    applyInstant();
+                });
+
+                document.getElementById('speedSlider').addEventListener('input', (e) => {
+                    this.settings.visual.speed = parseFloat(e.target.value);
+                    document.getElementById('speedValue').textContent = e.target.value;
+                    applyInstant();
+                });
+
+                document.getElementById('ballColor').addEventListener('change', (e) => {
+                    this.settings.visual.ballColor = e.target.value;
+                    // If user picks black background and no gradient chosen, no gradient applied
+                    applyInstant();
+                });
+
+                document.querySelectorAll('.color-preset-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const color = btn.getAttribute('data-color');
+                        this.settings.visual.ballColor = color;
+                        document.getElementById('ballColor').value = color;
+                        applyInstant();
+                    });
+                });
+
+                document.getElementById('bgColor').addEventListener('change', (e) => {
+                    this.settings.visual.backgroundColor = e.target.value;
+                    this.settings.visual.isGradient = false;
+                    applyInstant();
+                });
+
+                document.querySelectorAll('.gradient-preset-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const gradient = btn.getAttribute('data-gradient');
+                        this.settings.visual.isGradient = true;
+                        this.settings.visual.gradientType = gradient;
+                        applyInstant();
+                    });
+                });
+
+                // Removed effects from the menu, so no effectSelect listener
+
+                document.getElementById('soundTypeSelect').addEventListener('change', (e) => {
+                    this.settings.audio.primarySound = e.target.value;
+                    applyInstant();
+                });
+
+                document.getElementById('frequencyControl').addEventListener('input', (e) => {
+                    const freq = parseFloat(e.target.value);
+                    this.settings.audio.frequency = freq;
+                    document.getElementById('frequencyValue').textContent = freq + ' Hz';
+                    applyInstant();
+                });
+
+                document.getElementById('invertPanning').addEventListener('change', (e) => {
+                    this.settings.audio.invertPanning = e.target.checked;
+                    applyInstant();
+                });
+
+                document.getElementById('mainVolumeSlider').addEventListener('input', (e) => {
+                    this.settings.audio.mainVolume = parseFloat(e.target.value);
+                    document.getElementById('mainVolumeValue').textContent = (this.settings.audio.mainVolume * 100).toFixed(0) + '%';
+                    applyInstant();
+                });
+
+                document.getElementById('question7').addEventListener('input', (e) => {
+                    document.getElementById('question7Value').textContent = e.target.value;
+                });
+
+                document.getElementById('question9').addEventListener('input', (e) => {
+                    document.getElementById('question9Value').textContent = e.target.value;
+                });
+
+                document.addEventListener('keydown', (e) => this.handleKeyPress(e));
+            }
+
+            onWindowResize() {
+                this.camera.aspect = window.innerWidth / window.innerHeight;
+                this.camera.updateProjectionMatrix();
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
             }
         }
 
-        function toggleQuestions() {
-            const questionsPanel = document.getElementById('questionsPanel');
-            const controlPanel = document.getElementById('controlPanel');
-            const soundTypeContainer = document.getElementById('soundTypeContainer');
-
-            if (questionsPanel.style.display === 'none') {
-                questionsPanel.style.display = 'block';
-                controlPanel.style.display = 'none';
-                soundTypeContainer.style.display = 'none';
-            } else {
-                questionsPanel.style.display = 'none';
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                window.emdrApp = new EMDRApp();
+            } catch (error) {
+                console.error('Failed to initialize EMDR application:', error);
             }
-        }
-
-        function updateMaterial() {
-            scene.remove(mesh);
-            if (materialType === "wireframe") {
-                material = new THREE.MeshBasicMaterial({ color: ballColor, wireframe: true });
-            } else {
-                material = new THREE.MeshBasicMaterial({ color: ballColor });
-            }
-            mesh = new THREE.Mesh(geometry, material);
-            mesh.scale.set(ballSize, ballSize, ballSize);
-            scene.add(mesh);
-        }
-
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        function startAudio() {
-            document.getElementById('startButton').style.display = "none";
-            document.getElementById('endButton').style.display = 'block';
-
-            // Close questions and controls when starting EMDR
-            document.getElementById('questionsPanel').style.display = 'none';
-            document.getElementById('controlPanel').style.display = 'none';
-            document.getElementById('soundTypeContainer').style.display = 'none';
-
-            audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            oscillator = audioContext.createOscillator();
-            gainNode = audioContext.createGain();
-            panner = audioContext.createStereoPanner();
-
-            oscillator.connect(gainNode);
-            gainNode.connect(panner);
-            panner.connect(audioContext.destination);
-
-            const soundType = document.querySelector('input[name="soundType"]:checked').value;
-            oscillator.type = soundType;
-            oscillator.frequency.value = frequency;
-            gainNode.gain.value = volume;
-
-            oscillator.start();
-            isAudioStarted = true;
-
-            // Fade out start button
-            document.getElementById('startButton').classList.add('hidden');
-
-            animate();
-        }
-
-        function animate() {
-            if (!isAudioStarted) return;
-            animationFrameId = requestAnimationFrame(animate);
-
-            mesh.position.x += direction * heartRate;
-            if (mesh.position.x > 6.5 || mesh.position.x < -6.5) {
-                direction *= -1;
-            }
-            let panValue = 2 * (mesh.position.x / 6.5);
-            if (invertPanning) panValue *= -1;
-            panner.pan.value = Math.max(-1, Math.min(1, panValue));
-
-            gainNode.gain.value = volume * (0.2 + 0.8 * Math.abs(mesh.position.x / 6.5));
-
-            renderer.render(scene, camera);
-        }
-
-        function stopAudio() {
-            if (oscillator) {
-                oscillator.stop();
-                oscillator.disconnect();
-                oscillator = null;
-            }
-            if (audioContext) {
-                audioContext.close();
-                audioContext = null;
-            }
-            if (animationFrameId) {
-                cancelAnimationFrame(animationFrameId);
-            }
-            document.getElementById('startButton').style.display = "block";
-            document.getElementById('endButton').style.display = 'none';
-            isAudioStarted = false;
-
-            // Fade in start button
-            document.getElementById('startButton').classList.remove('hidden');
-        }
-
-        function updateSoundType() {
-            if (isAudioStarted && audioContext && oscillator) {
-                const soundType = document.querySelector('input[name="soundType"]:checked').value;
-                oscillator.type = soundType;
-            }
-        }
-
-        init();
+        });
     </script>
 </body>
 </html>
