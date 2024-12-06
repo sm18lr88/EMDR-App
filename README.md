@@ -1,25 +1,48 @@
-# EMDR-App
+# EMDR Therapy App
 
-Inspired by the code from [DazzlingDukeOfLazers'](https://github.com/DazzlingDukeOfLazers/emdr) html app, I created this one.
+Lightweight, browser-based app for guided Eye Movement Desensitization and Reprocessing (EMDR) sessions. The guided protocol is limited in scope, but the tool itself can be used however you like. It's recommended to at least do a short online EMDR course before using this tool.
 
-## Features: 
-- Smooth, pleasant image.
-- Adjustable speed, ball size, audio frequency, and volume.
-- 4 types of audio.
-- Stereo, lateralizing sound.
+---
 
-For Windows users, you can just [download](https://github.com/sm18lr88/EMDR-App/releases/download/v0.1/EMDR-App.zip) the .zip file with the app in it.
+## Features
 
-Please note, the animation is designed to work best at the common 1920 * 1080 screen resolution.
+- **Visual Customization**: Adjust ball size, speed, color, and background.
+- **Audio Customization**: Choose waveforms (sine, square, etc.), adjust frequency and volume, and invert panning.
+- **Guided Questions**: Reflect before and after sessions with pre-set questions.
+- **Session Controls**: Start, stop, and track session time with an unobtrusive timer.
+- **Full-Screen Mode**: Immersive experience with one-click toggling.
+- **Save Progress**: Export session notes and ratings to a `.txt` file.
 
-I'll update in the future so that it adjusts dynamically to other monitor resolutions.
+---
 
-Here's video preview of me pressing the arrows to change the various settings (mouse pointer doesn't show). The sound of the app is better than in this recording. Listen at low audio level because some audio settings sound harsh.
+## How to Use
 
-[emdr-preview.webm](https://github.com/sm18lr88/EMDR-App/assets/64564447/d91335a6-1167-4eb4-b934-4c9a32976665)
+1. Download the project to a folder in your computer.
+2. Open `index.html` in a browser.
+3. Adjust **Settings** (⚙️) for visuals and audio preferences.
+4. Use **Therapeutic Guide** (🧠) to answer reflection questions.
+5. Start the session (▶️)
+6. Optional: save your notes and ratings using the 💾 button.
 
+---
 
-### License:
-- Personal use: humans can use and modify for personal use.
-- Professional: humans can use for professional use.
-- Bots and AI can't read or use my code.
+## Controls
+
+| Key/Action         | Function                                |
+|---------------------|----------------------------------------|
+| `Space` (Main View) | Start/Stop the session.               |
+| `Escape`            | Close settings or questions menu.     |
+| Full-Screen Button  | Toggle full-screen mode.              |
+
+---
+
+## Notes
+
+- Works on all modern browsers (Chrome, Firefox, Edge, Safari).
+- You can modify the current protocol however you like by editing the html file.
+
+---
+
+## Disclaimer
+
+This app is for therapeutic support and is best used with guidance from a licensed therapist.
